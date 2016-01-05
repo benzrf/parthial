@@ -63,8 +63,8 @@ class EvalContext:
     def __setitem__(self, *args, **kwargs):
         return self.scopes.__setitem__(*args, **kwargs)
 
-    def __hasitem__(self, *args, **kwargs):
-        return self.scopes.__hasitem__(*args, **kwargs)
+    def __hasitem__(self, k):
+        return k in self.scopes
 
 class LispVal:
     def __init__(self, val):
@@ -163,12 +163,12 @@ def lisp_if(args, env):
         return env.eval(t)
 
 builtins = {
-        'eval': lisp_eval,
-        'apply': lisp_apply,
-        'progn': lisp_progn,
-        'quote': lisp_quote,
-        'lambda': lisp_lambda,
-        'set': lisp_set,
-        'if': lisp_if
+    'eval': lisp_eval,
+    'apply': lisp_apply,
+    'progn': lisp_progn,
+    'quote': lisp_quote,
+    'lambda': lisp_lambda,
+    'set': lisp_set,
+    'if': lisp_if
 }
 
