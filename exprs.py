@@ -49,6 +49,9 @@ class LispFunc:
         with env.scopes_as(self.clos), env.new_scope(arg_scope):
             return env.eval(self.body)
 
+    def __bool__(self):
+        return True
+
     def __repr__(self):
         return 'LispFunc({!r}, {!r}, {!r})'.\
                 format(self.pars, self.body, self.name)
