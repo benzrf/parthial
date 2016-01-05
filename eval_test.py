@@ -8,22 +8,17 @@ def lispify(v):
     else:
         return v
 
-def rec_limit_test():
-    i = EvalContext({'lambda': lisp_lambda})
-    nt = lispify([['lambda', ['f'], ['f', 'f']], ['lambda', ['f'], ['f', 'f']]])
-    i.run(nt)
-
-def cl_test():
-    i = EvalContext({'lambda': lisp_lambda, 'x': 3})
-    cl = [[['lambda', ['n'], ['lambda', [], 'n']], 'x']]
-    res, t = i.run(lispify(cl))
+def test(code, extra={}):
+    ctx = builtins.copy()
+    ctx.update(extra)
+    i = EvalContext(ctx)
+    res, t = i.run(lispify(code))
     print(res)
     print(list(t))
 
-def cl_test2():
-    i = EvalContext({'lambda': lisp_lambda, 'x': 3})
-    cl = [['lambda', ['n'], ['lambda', [], 'n']], 'x']
-    res, t = i.run(lispify(cl))
-    print(res)
-    print(list(t))
+rec_limit_test = [['lambda', ['f'], ['f', 'f']], ['lambda', ['f'], ['f', 'f']]]
+
+cl_test = [[['lambda', ['n'], ['lambda', [], 'n']], ['quote', 'x']]]
+
+cl_test2 = [['lambda', ['n'], ['lambda', [], 'n']], ['quote', 'x']]
 
