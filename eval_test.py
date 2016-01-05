@@ -22,3 +22,5 @@ cl_test = [[['lambda', ['n'], ['lambda', [], 'n']], ['quote', 'x']]]
 
 cl_test2 = [['lambda', ['n'], ['lambda', [], 'n']], ['quote', 'x']]
 
+cl_eval_test = [[['lambda', [], ['progn', ['set', 'x', ['quote', 'z']], ['lambda', ['v'], ['eval', 'v']]]]], ['quote', 'x']]
+
