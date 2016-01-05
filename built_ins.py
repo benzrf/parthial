@@ -1,5 +1,4 @@
-from context import LispError
-from exprs import LispSymbol, LispList, LispFunc
+from exprs import LispSymbol, LispList, LispFunc, LispError
 
 def lisp_eval(args, env):
     args = list(map(env.eval, args))

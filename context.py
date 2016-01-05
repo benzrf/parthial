@@ -5,9 +5,6 @@ from weakref import WeakSet
 class InterpreterError(Exception):
     pass
 
-class LispError(Exception):
-    pass
-
 class EvalContext:
     def __init__(self, globals={}, max_depth=100, max_steps=10000, max_things=5000):
         self.scopes = ChainMap({}, globals)
@@ -35,9 +32,9 @@ class EvalContext:
             raise InterpreterError('too many steps')
         self.depth += 1
         self.steps += 1
-        r = expr.eval(self)
+        res = expr.eval(self)
         self.depth -= 1
-        return r
+        return res
 
     def new(self, val):
         if len(self.things) >= self.max_things:

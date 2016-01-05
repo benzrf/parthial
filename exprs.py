@@ -1,5 +1,7 @@
 from collections import ChainMap
-from context import LispError
+
+class LispError(Exception):
+    pass
 
 class LispVal:
     def __init__(self, val):
