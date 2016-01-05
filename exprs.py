@@ -21,7 +21,10 @@ class LispVal:
 
 class LispSymbol(LispVal):
     def eval(self, env):
-        return env[self.val]
+        if self.val in env:
+            return env[self.val]
+        else:
+            raise LispError('nonexistent variable')
 
 class LispList(LispVal):
     def eval(self, env):
@@ -42,10 +45,10 @@ class LispFunc:
                 pars, body, name, clos
 
     def __call__(self, args, env):
+        args = list(map(env.eval, args))
         if len(args) != len(self.pars):
             raise LispError('wrong number of args given to {}'.format(self.name))
-        args_ = map(env.eval, args)
-        arg_scope = dict(zip(self.pars, args_))
+        arg_scope = dict(zip(self.pars, args))
         with env.scopes_as(self.clos), env.new_scope(arg_scope):
             return env.eval(self.body)
 

@@ -58,6 +58,6 @@ class EvalContext:
     def __setitem__(self, *args, **kwargs):
         return self.scopes.__setitem__(*args, **kwargs)
 
-    def __hasitem__(self, k):
-        return k in self.scopes
+    def __contains__(self, *args, **kwargs):
+        return self.scopes.__contains__(*args, **kwargs)
 
