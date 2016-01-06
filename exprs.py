@@ -33,7 +33,7 @@ class LispList(LispVal):
             if not callable(f):
                 raise LispError('non-callable value in application')
             args = self.val[1:]
-            if not (hasattr(f, 'quote') and f.quote):
+            if not (hasattr(f, 'quotes') and f.quotes):
                 args = list(map(env.eval, args))
             return f(args, env)
         else:

@@ -6,7 +6,7 @@ class LispBuiltin:
 
     def __init__(self, name, f, quotes=False):
         self.f, self.name, self.quotes = f, name, quotes
-        LispBuiltin.built_ins[name] = f
+        LispBuiltin.built_ins[name] = self
 
     def __call__(self, *args, **kwargs):
         return self.f(*args, **kwargs)
