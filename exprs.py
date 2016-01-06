@@ -16,6 +16,9 @@ class LispVal:
     def __bool__(self):
         return bool(self.val)
 
+    def __str__(self):
+        return str(self.val)
+
     def __repr__(self):
         return '{}({!r})'.format(self.__class__.__name__, self.val)
 
@@ -25,6 +28,9 @@ class LispSymbol(LispVal):
             return env[self.val]
         else:
             raise LispError('nonexistent variable')
+
+    def __str__(self):
+        return repr(self.val)
 
 class LispList(LispVal):
     def eval(self, env):
@@ -41,6 +47,9 @@ class LispList(LispVal):
 
     def children(self):
         return self.val
+
+    def __str__(self):
+        return '(' + ' '.join(map(str, self.val)) + ')'
 
 class LispFunc:
     def __init__(self, pars, body, name='anonymous function', clos=ChainMap()):
@@ -60,4 +69,11 @@ class LispFunc:
     def __repr__(self):
         return 'LispFunc({!r}, {!r}, {!r})'.\
                 format(self.pars, self.body, self.name)
+
+    def __str__(self):
+        if self.name != 'anonymous function':
+            return self.name
+        else:
+            pars = LispList(list(map(LispSymbol, self.pars)))
+            return str(LispList([LispSymbol('lambda'), pars, self.body]))
 
