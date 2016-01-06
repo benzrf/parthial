@@ -1,14 +1,31 @@
+from functools import partial
 from .exprs import LispSymbol, LispList, LispFunc, LispError
 
-def quotes(f):
-    f.quote = True
-    return f
+class LispBuiltin:
+    built_ins = {}
 
+    def __init__(self, name, f, quotes=False):
+        self.f, self.name, self.quotes = f, name, quotes
+        LispBuiltin.built_ins[name] = f
+
+    def __call__(self, *args, **kwargs):
+        return self.f(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+built_ins = LispBuiltin.built_ins
+
+def builtin(*args, **kwargs):
+    return partial(LispBuiltin, *args, **kwargs)
+
+@builtin('eval')
 def lisp_eval(args, env):
     if len(args) != 1:
         raise LispError('wrong number of args given to eval')
     return env.eval(args[0])
 
+@builtin('apply')
 def lisp_apply(args, env):
     if len(args) != 2:
         raise LispError('wrong number of args given to apply')
@@ -19,18 +36,19 @@ def lisp_apply(args, env):
         raise LispError('second argument to apply not a list')
     return f(xs.val, env)
 
+@builtin('progn')
 def lisp_progn(args, env):
     if not args:
         raise LispError('no args given to progn')
     return args[-1]
 
-@quotes
+@builtin('quote', quotes=True)
 def lisp_quote(args, env):
     if len(args) != 1:
         raise LispError('wrong number of args given to quote')
     return args[0]
 
-@quotes
+@builtin('lambda', quotes=True)
 def lisp_lambda(args, env):
     if len(args) != 2:
         raise LispError('wrong number of args given to lambda')
@@ -44,7 +62,7 @@ def lisp_lambda(args, env):
     clos.maps.pop(0)
     return env.new(LispFunc(pars, body, 'anonymous function', clos))
 
-@quotes
+@builtin('set', quotes=True)
 def lisp_set(args, env):
     if len(args) != 2:
         raise LispError('wrong number of args given to set')
@@ -55,7 +73,7 @@ def lisp_set(args, env):
     env[name.val] = val
     return val
 
-@quotes
+@builtin('if', quotes=True)
 def lisp_if(args, env):
     if len(args) != 3:
         raise LispError('wrong number of args given to if')
@@ -65,14 +83,4 @@ def lisp_if(args, env):
         return env.eval(i)
     else:
         return env.eval(t)
-
-built_ins = {
-    'eval': lisp_eval,
-    'apply': lisp_apply,
-    'progn': lisp_progn,
-    'quote': lisp_quote,
-    'lambda': lisp_lambda,
-    'set': lisp_set,
-    'if': lisp_if
-}
 
