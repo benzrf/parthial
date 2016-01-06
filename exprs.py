@@ -32,7 +32,10 @@ class LispList(LispVal):
             f = env.eval(self.val[0])
             if not callable(f):
                 raise LispError('non-callable value in application')
-            return f(self.val[1:], env)
+            args = self.val[1:]
+            if not (hasattr(f, 'quote') and f.quote):
+                args = list(map(env.eval, args))
+            return f(args, env)
         else:
             return self
 
@@ -45,7 +48,6 @@ class LispFunc:
                 pars, body, name, clos
 
     def __call__(self, args, env):
-        args = list(map(env.eval, args))
         if len(args) != len(self.pars):
             raise LispError('wrong number of args given to {}'.format(self.name))
         arg_scope = dict(zip(self.pars, args))

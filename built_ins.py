@@ -1,13 +1,15 @@
 from exprs import LispSymbol, LispList, LispFunc, LispError
 
+def quotes(f):
+    f.quote = True
+    return f
+
 def lisp_eval(args, env):
-    args = list(map(env.eval, args))
     if len(args) != 1:
         raise LispError('wrong number of args given to eval')
     return env.eval(args[0])
 
 def lisp_apply(args, env):
-    args = list(map(env.eval, args))
     if len(args) != 2:
         raise LispError('wrong number of args given to apply')
     f, xs = args
@@ -18,16 +20,17 @@ def lisp_apply(args, env):
     return f(xs.val, env)
 
 def lisp_progn(args, env):
-    args = list(map(env.eval, args))
     if not args:
         raise LispError('no args given to progn')
     return args[-1]
 
+@quotes
 def lisp_quote(args, env):
     if len(args) != 1:
         raise LispError('wrong number of args given to quote')
     return args[0]
 
+@quotes
 def lisp_lambda(args, env):
     if len(args) != 2:
         raise LispError('wrong number of args given to quote')
@@ -41,6 +44,7 @@ def lisp_lambda(args, env):
     clos.maps.pop(0)
     return env.new(LispFunc(pars, body, 'anonymous function', clos))
 
+@quotes
 def lisp_set(args, env):
     if len(args) != 2:
         raise LispError('wrong number of args given to set')
@@ -51,6 +55,7 @@ def lisp_set(args, env):
     env[name.val] = val
     return val
 
+@quotes
 def lisp_if(args, env):
     if len(args) != 3:
         raise LispError('wrong number of args given to if')
