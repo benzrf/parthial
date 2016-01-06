@@ -1,6 +1,6 @@
-from context import *
-from exprs import *
-from built_ins import *
+from .context import *
+from .exprs import *
+from .built_ins import *
 
 def lispify(v):
     if isinstance(v, list):

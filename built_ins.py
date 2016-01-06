@@ -1,4 +1,4 @@
-from exprs import LispSymbol, LispList, LispFunc, LispError
+from .exprs import LispSymbol, LispList, LispFunc, LispError
 
 def quotes(f):
     f.quote = True
