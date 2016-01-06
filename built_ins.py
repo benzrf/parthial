@@ -33,7 +33,7 @@ def lisp_quote(args, env):
 @quotes
 def lisp_lambda(args, env):
     if len(args) != 2:
-        raise LispError('wrong number of args given to quote')
+        raise LispError('wrong number of args given to lambda')
     pars, body = args
     if not isinstance(pars, LispList):
         raise LispError('first argument to lambda not a list')
