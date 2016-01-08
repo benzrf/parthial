@@ -2,11 +2,8 @@ from functools import partial
 from .exprs import LispSymbol, LispList, LispFunc, LispError
 
 class LispBuiltin:
-    built_ins = {}
-
-    def __init__(self, name, f, quotes=False):
+    def __init__(self, f, name, quotes=False):
         self.f, self.name, self.quotes = f, name, quotes
-        LispBuiltin.built_ins[name] = self
 
     def __call__(self, *args, **kwargs):
         return self.f(*args, **kwargs)
@@ -14,18 +11,22 @@ class LispBuiltin:
     def __str__(self):
         return self.name
 
-built_ins = LispBuiltin.built_ins
+built_ins = {}
 
-def builtin(*args, **kwargs):
-    return partial(LispBuiltin, *args, **kwargs)
+def built_in(d, *args, **kwargs):
+    def _(f):
+        b = LispBuiltin(f, *args, **kwargs)
+        d[b.name] = b
+        return b
+    return _
 
-@builtin('eval')
+@built_in(built_ins, 'eval')
 def lisp_eval(args, env):
     if len(args) != 1:
         raise LispError('wrong number of args given to eval')
     return env.eval(args[0])
 
-@builtin('apply')
+@built_in(built_ins, 'apply')
 def lisp_apply(args, env):
     if len(args) != 2:
         raise LispError('wrong number of args given to apply')
@@ -36,19 +37,19 @@ def lisp_apply(args, env):
         raise LispError('second argument to apply not a list')
     return f(xs.val, env)
 
-@builtin('progn')
+@built_in(built_ins, 'progn')
 def lisp_progn(args, env):
     if not args:
         raise LispError('no args given to progn')
     return args[-1]
 
-@builtin('quote', quotes=True)
+@built_in(built_ins, 'quote', quotes=True)
 def lisp_quote(args, env):
     if len(args) != 1:
         raise LispError('wrong number of args given to quote')
     return args[0]
 
-@builtin('lambda', quotes=True)
+@built_in(built_ins, 'lambda', quotes=True)
 def lisp_lambda(args, env):
     if len(args) != 2:
         raise LispError('wrong number of args given to lambda')
@@ -62,7 +63,7 @@ def lisp_lambda(args, env):
     clos.maps.pop(0)
     return env.new(LispFunc(pars, body, 'anonymous function', clos))
 
-@builtin('set', quotes=True)
+@built_in(built_ins, 'set', quotes=True)
 def lisp_set(args, env):
     if len(args) != 2:
         raise LispError('wrong number of args given to set')
@@ -73,7 +74,7 @@ def lisp_set(args, env):
     env[name.val] = val
     return val
 
-@builtin('if', quotes=True)
+@built_in(built_ins, 'if', quotes=True)
 def lisp_if(args, env):
     if len(args) != 3:
         raise LispError('wrong number of args given to if')
