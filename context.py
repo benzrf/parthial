@@ -6,8 +6,9 @@ class InterpreterError(Exception):
     pass
 
 class Context:
-    def __init__(self, globals={}):
+    def __init__(self, globals={}, max_things=5000):
         self.scopes = ChainMap({}, globals)
+        self.max_things = max_things
         self.things = WeakSet()
 
     @contextmanager
@@ -44,10 +45,10 @@ class Context:
         return self.scopes.__contains__(*args, **kwargs)
 
 class EvalContext(Context):
-    def __init__(self, globals={}, max_depth=100, max_steps=10000, max_things=5000):
-        super().__init__(globals)
-        self.max_depth, self.max_steps, self.max_things =\
-                max_depth, max_steps, max_things
+    def __init__(self, globals={}, max_things=5000, max_depth=100, max_steps=10000):
+        super().__init__(globals, max_things)
+        self.max_depth, self.max_steps =\
+                max_depth, max_steps
         self.depth = self.steps = 0
 
     def eval(self, expr):
