@@ -7,7 +7,8 @@ class InterpreterError(Exception):
 
 class Context:
     def __init__(self, globals={}, max_things=5000):
-        self.scopes = ChainMap({}, globals)
+        self.globals = globals
+        self.scopes = ChainMap()
         self.max_things = max_things
         self.things = WeakSet()
 
@@ -36,13 +37,15 @@ class Context:
         return val
 
     def __getitem__(self, *args, **kwargs):
-        return self.scopes.__getitem__(*args, **kwargs)
+        chain = ChainMap(self.scopes, self.globals)
+        return chain.__getitem__(*args, **kwargs)
 
     def __setitem__(self, *args, **kwargs):
         return self.scopes.__setitem__(*args, **kwargs)
 
     def __contains__(self, *args, **kwargs):
-        return self.scopes.__contains__(*args, **kwargs)
+        chain = ChainMap(self.scopes, self.globals)
+        return chain.__contains__(*args, **kwargs)
 
 class EvalContext(Context):
     def __init__(self, globals={}, max_things=5000, max_depth=100, max_steps=10000):
