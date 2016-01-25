@@ -5,12 +5,9 @@ from weakref import WeakSet
 class InterpreterError(Exception):
     pass
 
-class EvalContext:
-    def __init__(self, globals={}, max_depth=100, max_steps=10000, max_things=5000):
+class Context:
+    def __init__(self, globals={}):
         self.scopes = ChainMap({}, globals)
-        self.max_depth, self.max_steps, self.max_things =\
-                max_depth, max_steps, max_things
-        self.depth = self.steps = 0
         self.things = WeakSet()
 
     @contextmanager
@@ -25,6 +22,34 @@ class EvalContext:
         yield
         self.scopes = old_scopes
 
+    def new(self, val):
+        if len(self.things) >= self.max_things:
+            raise InterpreterError('too many things')
+        self.things.add(val)
+        return val
+
+    def rec_new(self, val):
+        for child in val.children():
+            self.rec_new(child)
+        self.new(val)
+        return val
+
+    def __getitem__(self, *args, **kwargs):
+        return self.scopes.__getitem__(*args, **kwargs)
+
+    def __setitem__(self, *args, **kwargs):
+        return self.scopes.__setitem__(*args, **kwargs)
+
+    def __contains__(self, *args, **kwargs):
+        return self.scopes.__contains__(*args, **kwargs)
+
+class EvalContext(Context):
+    def __init__(self, globals={}, max_depth=100, max_steps=10000, max_things=5000):
+        super().__init__(globals)
+        self.max_depth, self.max_steps, self.max_things =\
+                max_depth, max_steps, max_things
+        self.depth = self.steps = 0
+
     def eval(self, expr):
         if self.depth >= self.max_depth:
             raise InterpreterError('too much nesting')
@@ -36,28 +61,8 @@ class EvalContext:
         self.depth -= 1
         return res
 
-    def new(self, val):
-        if len(self.things) >= self.max_things:
-            raise InterpreterError('too many things')
-        self.things.add(val)
-        return val
-
-    def rec_new(self, val):
-        for child in val.children():
-            self.rec_new(child)
-        self.new(val)
-
     def run(self, expr):
         self.rec_new(expr)
         res = self.eval(expr)
         return res, self.things
-
-    def __getitem__(self, *args, **kwargs):
-        return self.scopes.__getitem__(*args, **kwargs)
-
-    def __setitem__(self, *args, **kwargs):
-        return self.scopes.__setitem__(*args, **kwargs)
-
-    def __contains__(self, *args, **kwargs):
-        return self.scopes.__contains__(*args, **kwargs)
 
