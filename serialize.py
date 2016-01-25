@@ -1,7 +1,6 @@
 from collections import ChainMap
 from camel import CamelRegistry
-from .vals import LispSymbol, LispList, LispFunc
-from .built_ins import LispBuiltin
+from .vals import LispSymbol, LispList, LispFunc, LispBuiltin
 
 def registry(globals):
     parthial_types = CamelRegistry()
