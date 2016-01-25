@@ -1,15 +1,5 @@
 from functools import partial
-from .exprs import LispSymbol, LispList, LispFunc, LispError
-
-class LispBuiltin:
-    def __init__(self, f, name, quotes=False):
-        self.f, self.name, self.quotes = f, name, quotes
-
-    def __call__(self, *args, **kwargs):
-        return self.f(*args, **kwargs)
-
-    def __str__(self):
-        return self.name
+from .vals import LispError, LispSymbol, LispList, LispFunc, LispBuiltin
 
 built_ins = {}
 
