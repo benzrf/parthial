@@ -48,6 +48,9 @@ class Context:
     def __setitem__(self, *args, **kwargs):
         return self.scopes.__setitem__(*args, **kwargs)
 
+    def __delitem__(self, *args, **kwargs):
+        return self.scopes.__delitem__(*args, **kwargs)
+
     def __contains__(self, *args, **kwargs):
         chain = ChainMap(self.scopes, self.globals)
         return chain.__contains__(*args, **kwargs)
