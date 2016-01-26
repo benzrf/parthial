@@ -1,6 +1,7 @@
 from collections import ChainMap
 from camel import CamelRegistry
 from .vals import LispSymbol, LispList, LispFunc, LispBuiltin
+from .context import Context
 
 def registry(globals):
     parthial_types = CamelRegistry()
@@ -49,6 +50,18 @@ def registry(globals):
     @parthial_types.loader('lispbuiltin', version=1)
     def _load_bi_v1(n, ver):
         return globals[n]
+
+    @parthial_types.dumper(Context, 'context', version=1)
+    def _dump_context(ctx):
+        return dict(scopes=ctx.scopes, max_things=ctx.max_things)
+
+    @parthial_types.loader('context', version=1)
+    def _load_context(d, ver):
+        ctx = Context(globals, d['max_things'])
+        ctx.scopes = d['scopes']
+        for v in ctx.scopes.values():
+            ctx.rec_new(v)
+        return ctx
 
     return parthial_types
 

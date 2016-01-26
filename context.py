@@ -36,6 +36,11 @@ class Context:
         self.new(val)
         return val
 
+    def add_rec_new(self, k, val):
+        self.rec_new(val)
+        self[k] = val
+        return val
+
     def __getitem__(self, *args, **kwargs):
         chain = ChainMap(self.scopes, self.globals)
         return chain.__getitem__(*args, **kwargs)
