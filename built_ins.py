@@ -75,3 +75,12 @@ def lisp_if(args, env):
     else:
         return env.eval(t)
 
+@built_in(built_ins, 'cons')
+def lisp_cons(args, env):
+    if len(args) != 2:
+        raise LispError('wrong number of args given to cons')
+    h, t = args
+    if not isinstance(t, LispList):
+        raise LispError('second argument to cons not a list')
+    return env.new(LispList([h] + t.val))
+
