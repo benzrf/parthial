@@ -23,7 +23,7 @@ class LispVal:
         return '{}({!r})'.format(self.__class__.__name__, self.val)
 
 class LispSymbol(LispVal):
-    FALSES = 'false no off'.split()
+    FALSES = ['', 'false', 'no', 'off', '0', 'null', 'undefined', 'nan']
 
     def eval(self, env):
         if self.val in env:
