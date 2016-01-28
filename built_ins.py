@@ -7,15 +7,16 @@ built_ins = {}
 def built_in(d, *args, count_args=True, **kwargs):
     def _(f):
         if count_args:
-            old_f = f
-            arg_count = old_f.__code__.co_argcount - 2
-            @wraps(old_f)
-            def f(self, env, args):
+            arg_count = f.__code__.co_argcount - 2
+            @wraps(f)
+            def wrapped(self, env, args):
                 if len(args) == arg_count:
-                    return old_f(self, env, *args)
+                    return f(self, env, *args)
                 else:
                     raise ArgCountError(self, len(args), arg_count)
-        b = LispBuiltin(f, *args, **kwargs)
+        else:
+            wrapped = f
+        b = LispBuiltin(wrapped, *args, **kwargs)
         d[b.name] = b
         return b
     return _
