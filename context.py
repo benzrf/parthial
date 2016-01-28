@@ -1,9 +1,7 @@
 from contextlib import contextmanager
 from collections import ChainMap
 from weakref import WeakSet
-
-class InterpreterError(Exception):
-    pass
+from .errs import LimitationError
 
 class Context:
     def __init__(self, globals={}, max_things=5000):
@@ -26,7 +24,7 @@ class Context:
 
     def new(self, val):
         if len(self.things) >= self.max_things:
-            raise InterpreterError('too many things')
+            raise LimitationError('too many things')
         self.things.add(val)
         return val
 
@@ -64,9 +62,9 @@ class EvalContext(Context):
 
     def eval(self, expr):
         if self.depth >= self.max_depth:
-            raise InterpreterError('too much nesting')
+            raise LimitationError('too much nesting')
         if self.steps >= self.max_steps:
-            raise InterpreterError('too many steps')
+            raise LimitationError('too many steps')
         self.depth += 1
         self.steps += 1
         res = expr.eval(self)

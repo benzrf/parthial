@@ -1,9 +1,9 @@
 from collections import ChainMap
-
-class LispError(Exception):
-    pass
+from .errs import LispNameError, UncallableError, ArgCountError
 
 class LispVal:
+    type_name = 'value'
+
     def __init__(self, val):
         self.val = val
 
@@ -23,13 +23,14 @@ class LispVal:
         return '{}({!r})'.format(self.__class__.__name__, self.val)
 
 class LispSymbol(LispVal):
+    type_name = 'symbol'
     FALSES = ['', 'false', 'no', 'off', '0', 'null', 'undefined', 'nan']
 
     def eval(self, env):
         if self.val in env:
             return env[self.val]
         else:
-            raise LispError('nonexistent variable')
+            raise LispNameError(self.val)
 
     def __bool__(self):
         return self.val.lower() not in self.FALSES
@@ -38,15 +39,17 @@ class LispSymbol(LispVal):
         return repr(self.val)
 
 class LispList(LispVal):
+    type_name = 'list'
+
     def eval(self, env):
         if self:
             f = env.eval(self.val[0])
             if not callable(f):
-                raise LispError('non-callable value in application')
+                raise UncallableError(f)
             args = self.val[1:]
             if not f.quotes:
                 args = list(map(env.eval, args))
-            return f(args, env)
+            return f(env, args)
         else:
             return self
 
@@ -57,6 +60,7 @@ class LispList(LispVal):
         return '(' + ' '.join(map(str, self.val)) + ')'
 
 class LispFunc(LispVal):
+    type_name = 'function'
     quotes = False
 
     def __init__(self, pars, body, name='anonymous function', clos=ChainMap()):
@@ -66,9 +70,9 @@ class LispFunc(LispVal):
     def children(self):
         return [self.body] + list(self.clos.values())
 
-    def __call__(self, args, env):
+    def __call__(self, env, args):
         if len(args) != len(self.pars):
-            raise LispError('wrong number of args given to {}'.format(self.name))
+            raise ArgCountError(self, len(args))
         arg_scope = dict(zip(self.pars, args))
         with env.scopes_as(self.clos), env.new_scope(arg_scope):
             return env.eval(self.body)
@@ -88,11 +92,13 @@ class LispFunc(LispVal):
                 format(self.pars, self.body, self.name)
 
 class LispBuiltin(LispVal):
+    type_name = 'builtin'
+
     def __init__(self, val, name, quotes=False):
         self.val, self.name, self.quotes = val, name, quotes
 
     def __call__(self, *args, **kwargs):
-        return self.val(*args, **kwargs)
+        return self.val(self, *args, **kwargs)
 
     def __str__(self):
         return self.name
