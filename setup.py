@@ -8,7 +8,7 @@ setup(
 
     author="benzrf",
     author_email="benzrf@benzrf.com",
-    description="Lisp interpreter for user-scriptable"
+    description="Lisp interpreter for user-scriptable "
                 "server-side applications",
     long_description=open("README.rst").read(),
     url="https://github.com/benzrf/parthial",
