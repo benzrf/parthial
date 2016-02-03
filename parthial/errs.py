@@ -1,6 +1,5 @@
 """
-This module defines a hierarchy of exceptions that may be raised by the
-interpreter.
+A hierarchy of exceptions that may be raised by the interpreter.
 """
 
 class LispError(Exception):
