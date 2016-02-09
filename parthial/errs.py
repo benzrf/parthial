@@ -6,11 +6,11 @@ class LispError(Exception):
     """Base class for interpreter errors.
 
     Attributes:
+        template: A template for use in generating error messages.
         val: The primary value involved in the error.
     """
 
     template = '{}'
-    """A template for use in generating error messages."""
 
     def __init__(self, val):
         self.val = val
