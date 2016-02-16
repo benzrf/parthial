@@ -66,11 +66,11 @@ def registry(globals):
     def _load_bi_v1(n, ver):
         return globals[n]
 
-    @parthial_types.dumper(Environment, 'context', version=1)
+    @parthial_types.dumper(Environment, 'environment', version=1)
     def _dump_context(env):
         return dict(scopes=env.scopes, max_things=env.max_things)
 
-    @parthial_types.loader('context', version=1)
+    @parthial_types.loader('environment', version=1)
     def _load_context(d, ver):
         env = Environment(globals, d['max_things'])
         env.scopes = d['scopes']
