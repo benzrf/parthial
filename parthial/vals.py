@@ -26,9 +26,9 @@ class LispSymbol(LispVal):
     type_name = 'symbol'
     FALSES = ['', 'false', 'no', 'off', '0', 'null', 'undefined', 'nan']
 
-    def eval(self, env):
-        if self.val in env:
-            return env[self.val]
+    def eval(self, ctx):
+        if self.val in ctx.env:
+            return ctx.env[self.val]
         else:
             raise LispNameError(self.val)
 
@@ -41,15 +41,15 @@ class LispSymbol(LispVal):
 class LispList(LispVal):
     type_name = 'list'
 
-    def eval(self, env):
+    def eval(self, ctx):
         if self:
-            f = env.eval(self.val[0])
+            f = ctx.eval(self.val[0])
             if not callable(f):
                 raise UncallableError(f)
             args = self.val[1:]
             if not f.quotes:
-                args = list(map(env.eval, args))
-            return f(env, args)
+                args = list(map(ctx.eval, args))
+            return f(ctx, args)
         else:
             return self
 
@@ -70,12 +70,12 @@ class LispFunc(LispVal):
     def children(self):
         return [self.body] + list(self.clos.values())
 
-    def __call__(self, env, args):
+    def __call__(self, ctx, args):
         if len(args) != len(self.pars):
             raise ArgCountError(self, len(args))
         arg_scope = dict(zip(self.pars, args))
-        with env.scopes_as(self.clos), env.new_scope(arg_scope):
-            return env.eval(self.body)
+        with ctx.env.scopes_as(self.clos), ctx.env.new_scope(arg_scope):
+            return ctx.eval(self.body)
 
     def __bool__(self):
         return True

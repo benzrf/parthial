@@ -7,17 +7,17 @@ from collections import ChainMap
 from weakref import WeakSet
 from .errs import LimitationError
 
-class Context:
+class Environment:
     """A chain of scopes that tracks its elements.
 
-    A :class:`LispVal` "is an element of" a :class:`Context` when it is
+    A :class:`LispVal` "is an element of" an :class:`Environment` when it is
     indirectly referenced by it (i.e., when the :class:`LispVal` cannot be
-    garbage collected until the :class:`Context` is). In order for
-    :class:`Contexts <Context>` to keep track of their elements, they must be
-    manually notified of any new values that may enter them. Therefore, **any**
-    code that allocates a :class:`LispVal` **must** immediately
-    :meth:`add <new>` it to any :class:`Contexts <Context>` that it may become
-    an element of.
+    garbage collected until the :class:`Environment` is). In order for
+    :class:`Environments <Environment>` to keep track of their elements, they
+    must be manually notified of any new values that may enter them. Therefore,
+    **any** code that allocates a :class:`LispVal` **must** immediately
+    :meth:`add <new>` it to any :class:`Environments <Environment>` that it may
+    become an element of.
 
     Attributes:
         scopes (list of dict-likes): My chain of scopes. Earlier scopes are
@@ -150,6 +150,9 @@ class Context:
     def __contains__(self, k):
         """Check whether a variable has been assigned to.
 
+        This is not **not** the same kind of element-of as described in the
+        class documentation.
+
         Args:
             k (str): The name of the variable to check.
 
@@ -159,9 +162,8 @@ class Context:
         chain = ChainMap(self.scopes, self.globals)
         return chain.__contains__(k)
 
-class EvalContext(Context):
-    """A :class:`Context` that tracks the progress of the evaluation of an
-    expression.
+class Context:
+    """An object representing the status of the evaluation of an expression.
 
     Attributes:
         depth (int): The current level of nesting. This measures nested calls to
@@ -181,17 +183,16 @@ class EvalContext(Context):
             invocation (e.g., in a Bignum extension).
 
     Args:
+        env (Environment): The current :class:`Environment` for the evaluation.
         max_depth (int, optional): The maximum value that :attr:`depth` may
             reach, after which :meth:`eval` may not be called. You should not
             set this to more than about a quarter of your stack depth at most.
         max_steps (int, optional): The maximum number of steps that may be
             taken during evaluation.
     """
-    def __init__(self, globals={}, max_things=5000, max_depth=100,\
-            max_steps=10000):
-        super().__init__(globals, max_things)
-        self.max_depth, self.max_steps =\
-                max_depth, max_steps
+
+    def __init__(self, env, max_depth=100, max_steps=10000):
+        self.env, self.max_depth, self.max_steps = env, max_depth, max_steps
         self.depth = self.steps = 0
 
     def eval(self, expr):
@@ -199,8 +200,8 @@ class EvalContext(Context):
 
         This does **not** add its argument (or its result) as an element of me!
         That is the responsibility of the code that created the object. This
-        means that you need to :meth:`Context.rec_new` any expression you get
-        from user input before evaluating it.
+        means that you need to :meth:`Environment.rec_new` any expression you
+        get from user input before evaluating it.
 
         This, and any wrappers around it, are the **only** entry points to
         expression evaluation you should call from ordinary code (i.e., code
@@ -229,16 +230,16 @@ class EvalContext(Context):
 
     @classmethod
     def eval_in_new(cls, expr, *args, **kwargs):
-        """:meth:`eval` an expression in a new, temporary :class:`EvalContext`.
+        """:meth:`eval` an expression in a new, temporary :class:`Context`.
 
         This should be safe to use directly on user input.
 
         Args:
             expr (LispVal): The expression to evaluate.
-            *args: Args for the :class:`EvalContext` constructor.
-            **kwargs: Kwargs for the :class:`EvalContext` constructor.
+            *args: Args for the :class:`Context` constructor.
+            **kwargs: Kwargs for the :class:`Context` constructor.
         """
         ctx = cls(*args, **kwargs)
-        ctx.rec_new(expr)
+        ctx.env.rec_new(expr)
         return ctx.eval(expr)
 
