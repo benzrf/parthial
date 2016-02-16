@@ -4,6 +4,21 @@ from .vals import LispSymbol, LispList, LispFunc, LispBuiltin
 from .context import Environment
 
 def registry(globals):
+    """Get a :class:`camel.CamelRegistry` for [de]serializing your Parthial
+    objects.
+
+    The registry will support [de]serializing instances of all standard
+    :class:`~parthial.vals.LispVal` subclasses, as well as
+    :class:`Environments <parthial.context.Environment>`.
+
+    Args:
+        globals (dict-like): The set of globals to initialize deserialized
+            :class:`Environments <parthial.context.Environment>` with.
+
+    Returns:
+        camel.CamelRegistry: The registry.
+    """
+
     parthial_types = CamelRegistry()
 
     @parthial_types.dumper(ChainMap, 'chainmap', version=1)
