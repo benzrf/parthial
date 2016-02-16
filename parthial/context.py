@@ -10,14 +10,13 @@ from .errs import LimitationError
 class Environment:
     """A chain of scopes that tracks its elements.
 
-    A :class:`LispVal` "is an element of" an :class:`Environment` when it is
-    indirectly referenced by it (i.e., when the :class:`LispVal` cannot be
-    garbage collected until the :class:`Environment` is). In order for
-    :class:`Environments <Environment>` to keep track of their elements, they
-    must be manually notified of any new values that may enter them. Therefore,
-    **any** code that allocates a :class:`LispVal` **must** immediately
-    :meth:`add <new>` it to any :class:`Environments <Environment>` that it may
-    become an element of.
+    A value "is an element of" an :class:`Environment` when it is indirectly
+    referenced by it (i.e., when the value cannot be garbage collected until the
+    :class:`Environment` is). In order for :class:`Environments <Environment>`
+    to keep track of their elements, they must be manually notified of any new
+    values that may enter them. Therefore, **any** code that allocates a
+    :class:`~parthial.vals.LispVal` **must** immediately :meth:`add <new>` it to
+    any :class:`Environments <Environment>` that it may become an element of.
 
     Attributes:
         scopes (list of dict-likes): My chain of scopes. Earlier scopes are
@@ -69,8 +68,8 @@ class Environment:
             LispVal: The added value.
 
         Raises:
-            LimitationError: If I already contain the maximum number of
-                elements.
+            ~parthial.errs.LimitationError: If I already contain the maximum
+                number of elements.
         """
         if len(self.things) >= self.max_things:
             raise LimitationError('too many things')
@@ -150,7 +149,7 @@ class Environment:
     def __contains__(self, k):
         """Check whether a variable has been assigned to.
 
-        This is not **not** the same kind of element-of as described in the
+        This is **not** the same kind of element-of as described in the
         class documentation.
 
         Args:
@@ -214,9 +213,9 @@ class Context:
             LispVal: The result of evaluating the expression.
 
         Raises:
-            LimitationError: If evaluating the expression would require more
-                nesting, more time, or the allocation of more values than is
-                permissible.
+            ~parthial.errs.LimitationError: If evaluating the expression would
+                require more nesting, more time, or the allocation of more
+                values than is permissible.
         """
         if self.depth >= self.max_depth:
             raise LimitationError('too much nesting')
