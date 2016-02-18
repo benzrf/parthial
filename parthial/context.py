@@ -105,6 +105,20 @@ class Environment:
         self[k] = val
         return val
 
+    def new_child(self):
+        """Get a new child :class:`Environment`.
+
+        The child's scopes will be mine, with an additional empty innermost
+        one.
+
+        Returns:
+            Environment: The child.
+        """
+        child = Environment(self.globals, self.max_things)
+        child.scopes = self.scopes.new_child()
+        child.things = WeakSet(self.things)
+        return child
+
     def __getitem__(self, k):
         """Look up a variable.
 
