@@ -85,9 +85,10 @@ class Environment:
         Returns:
             LispVal: The added value.
         """
-        for child in val.children():
-            self.rec_new(child)
-        self.new(val)
+        if val not in self.things:
+            for child in val.children():
+                self.rec_new(child)
+            self.new(val)
         return val
 
     def add_rec_new(self, k, val):
