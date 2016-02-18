@@ -64,7 +64,7 @@ unwise to actually expose an interpreter to the Internet at large, in case of
 security holes.
 
 No[t much] documentation (so far)
-~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Working on it...
 
