@@ -30,21 +30,21 @@ It's easy to define new built-ins, too:
     # part of the default_globals scope
     # suppresses evaluation of its arguments (quotes them)
     @built_in(default_globals, 'if', quotes=True)
-    def lisp_if(self, env, cond, i, t):
-        cond = env.eval(cond)
+    def lisp_if(self, ctx, cond, i, t):
+        cond = ctx.eval(cond)
         if cond:
-            return env.eval(i)
+            return ctx.eval(i)
         else:
-            return env.eval(t)
+            return ctx.eval(t)
 
 Serialization
 ~~~~~~~~~~~~~
 
 PyYAML serializers and deserializers are provided for all Lisp value types, as
-well as for definition contexts (built-ins are serialized by name, so a global
-scope must be supplied at deserialization). Allocation limitations are kept
-track of across serializtion, so it's safe and easy to give users a persistent
-mutable environment.
+well as for definition environments (built-ins are serialized by name, so a
+global scope must be supplied at deserialization). Allocation limitations are
+kept track of across serializtion, so it's safe and easy to give users a
+persistent mutable environment.
 
 Shortcomings
 ------------
