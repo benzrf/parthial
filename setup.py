@@ -4,7 +4,7 @@ setup(
     name="parthial",
     version="0.1",
     packages=find_packages(),
-    install_requires=["camel"],
+    install_requires=["pyyaml"],
 
     author="benzrf",
     author_email="benzrf@benzrf.com",

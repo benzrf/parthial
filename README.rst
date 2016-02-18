@@ -40,13 +40,11 @@ It's easy to define new built-ins, too:
 Serialization
 ~~~~~~~~~~~~~
 
-Camel_ serializers and deserializers are provided for all Lisp value types, as
+PyYAML serializers and deserializers are provided for all Lisp value types, as
 well as for definition contexts (built-ins are serialized by name, so a global
 scope must be supplied at deserialization). Allocation limitations are kept
 track of across serializtion, so it's safe and easy to give users a persistent
 mutable environment.
-
-.. _Camel: https://pypi.python.org/pypi/camel/0.1
 
 Shortcomings
 ------------
@@ -65,7 +63,7 @@ Nobody other than the original author has looked the code yet. For now, it'd be
 unwise to actually expose an interpreter to the Internet at large, in case of
 security holes.
 
-No documentation (so far)
+No[t much] documentation (so far)
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Working on it...

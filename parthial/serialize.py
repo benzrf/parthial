@@ -1,82 +1,113 @@
 from collections import ChainMap
-from camel import CamelRegistry
+from weakref import WeakSet
+from functools import partial
+import yaml
 from .vals import LispSymbol, LispList, LispFunc, LispBuiltin
 from .context import Environment
 
-def registry(globals):
-    """Get a :class:`camel.CamelRegistry` for [de]serializing your Parthial
-    objects.
+class ParthialDumper(yaml.SafeDumper):
+    """Dumper class for :class:`~parthial.vals.LispVal` subclasses and
+    :class:`Environments <parthial.context.Environment>`.
+    """
+dumper = lambda c: partial(ParthialDumper.add_representer, c)
 
-    The registry will support [de]serializing instances of all standard
-    :class:`~parthial.vals.LispVal` subclasses, as well as
+class ParthialLoader(yaml.SafeLoader):
+    """Loader class for :class:`~parthial.vals.LispVal` subclasses and
     :class:`Environments <parthial.context.Environment>`.
 
     Args:
-        globals (dict-like): The set of globals to initialize deserialized
-            :class:`Environments <parthial.context.Environment>` with.
-
-    Returns:
-        camel.CamelRegistry: The registry.
+        globals (dict-like): The set of globals to look up builtins in and
+        initialize deserialized
+        :class:`Environments <parthial.context.Environment>` with.
     """
+    def __init__(self, globals, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.globals = globals
+loader = lambda t: partial(ParthialLoader.add_constructor, t)
 
-    parthial_types = CamelRegistry()
+@dumper(WeakSet)
+def weakset_representer(dumper, data):
+    value = {}
+    for key in data:
+        value[key] = None
+    return dumper.represent_mapping('!weakset;1', value)
 
-    @parthial_types.dumper(ChainMap, 'chainmap', version=1)
-    def _dump_chainmap_v1(cm):
-        return cm.maps
+@loader('!weakset;1')
+def weakset_constructor(loader, node):
+    data = WeakSet()
+    yield data
+    value = loader.construct_mapping(node)
+    data.update(value)
 
-    @parthial_types.loader('chainmap', version=1)
-    def _load_chainmap_v1(ms, ver):
-        return ChainMap(*ms)
+@dumper(ChainMap)
+def chainmap_representer(dumper, data):
+    return dumper.represent_sequence('!chainmap;1', data.maps)
 
-    @parthial_types.dumper(LispSymbol, 'lispsym', version=1)
-    def _dump_symbol_v1(sym):
-        return sym.val
+@loader('!chainmap;1')
+def chainmap_constructor(loader, node):
+    data = ChainMap()
+    yield data
+    value = loader.construct_sequence(node)
+    data.maps = value
 
-    @parthial_types.loader('lispsym', version=1)
-    def _load_symbol_v1(s, ver):
-        return LispSymbol(s)
+@dumper(LispSymbol)
+def lispsymbol_representer(dumper, data):
+    return dumper.represent_scalar('!lispsymbol;1', data.val)
 
-    @parthial_types.dumper(LispList, 'lisplist', version=1)
-    def _dump_list_v1(list):
-        return list.val
+@loader('!lispsymbol;1')
+def lispsymbol_constructor(loader, node):
+    return LispSymbol(loader.construct_scalar(node))
 
-    @parthial_types.loader('lisplist', version=1)
-    def _load_list_v1(l, ver):
-        return LispList(l)
+@dumper(LispList)
+def lisplist_representer(dumper, data):
+    return dumper.represent_sequence('!lisplist;1', data.val)
 
-    @parthial_types.dumper(LispFunc, 'lispfunc', version=1)
-    def _dump_func_v1(func):
-        return dict(
-            pars=func.pars,
-            body=func.body,
-            name=func.name,
-            clos=func.clos
-        )
+@loader('!lisplist;1')
+def lisplist_constructor(loader, node):
+    data = LispList(None)
+    yield data
+    data.val = loader.construct_sequence(node)
 
-    @parthial_types.loader('lispfunc', version=1)
-    def _load_func_v1(d, ver):
-        return LispFunc(d['pars'], d['body'], d['name'], d['clos'])
+@dumper(LispFunc)
+def lispfunc_representer(dumper, data):
+    rep = dict(
+        pars=data.pars,
+        body=data.body,
+        name=data.name,
+        clos=data.clos,
+    )
+    return dumper.represent_mapping('!lispfunc;1', rep)
 
-    @parthial_types.dumper(LispBuiltin, 'lispbuiltin', version=1)
-    def _dump_bi_v1(bi):
-        return bi.name
+@loader('!lispfunc;1')
+def lispfunc_constructor(loader, node):
+    data = LispFunc(None, None, None, None)
+    yield data
+    rep = loader.construct_mapping(node)
+    data.pars, data.body, data.name, data.clos =\
+        rep['pars'], rep['body'], rep['name'], rep['clos']
 
-    @parthial_types.loader('lispbuiltin', version=1)
-    def _load_bi_v1(n, ver):
-        return globals[n]
+@dumper(LispBuiltin)
+def lispbuiltin_representer(dumper, data):
+    return dumper.represent_scalar('!lispbuiltin;1', data.name)
 
-    @parthial_types.dumper(Environment, 'environment', version=1)
-    def _dump_context(env):
-        return dict(scopes=env.scopes, max_things=env.max_things)
+@loader('!lispbuiltin;1')
+def lispbuiltin_constructor(loader, node):
+    return loader.globals[loader.construct_scalar(node)]
 
-    @parthial_types.loader('environment', version=1)
-    def _load_context(d, ver):
-        env = Environment(globals, d['max_things'])
-        env.scopes = d['scopes']
-        for v in env.scopes.values():
-            env.rec_new(v)
-        return env
+@dumper(Environment)
+def environment_representer(dumper, data):
+    rep = dict(
+        scopes=data.scopes,
+        max_things=data.max_things,
+        things=data.things,
+    )
+    return dumper.represent_mapping('!environment;1', rep)
 
-    return parthial_types
+@loader('!environment;1')
+def environment_constructor(loader, node):
+    data = Environment(loader.globals, None)
+    yield data
+    rep = loader.construct_mapping(node)
+    data.scopes, data.max_things, data.things =\
+        rep['scopes'], rep['max_things'], rep['things']
 
