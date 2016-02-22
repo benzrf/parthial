@@ -78,3 +78,16 @@ def lisp_cons(self, ctx, h, t):
         raise LimitationError('cons would create too long a list')
     return ctx.env.new(LispList([h] + t.val))
 
+@built_in(default_globals, 'car')
+def lisp_car(self, ctx, l):
+    check_type(self, l, LispList, 1)
+    if not l.val:
+        raise LispError('car of empty list')
+    return l.val[0]
+
+@built_in(default_globals, 'cdr')
+def lisp_cdr(self, ctx, l):
+    check_type(self, l, LispList, 1)
+    cdr = l.val[1:]
+    return ctx.env.new(LispList(cdr))
+
