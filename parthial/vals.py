@@ -10,7 +10,7 @@ class LispVal:
     def children(self):
         return []
 
-    def eval(self):
+    def eval(self, ctx):
         return self
 
     def __bool__(self):
