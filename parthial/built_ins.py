@@ -91,3 +91,9 @@ def lisp_cdr(self, ctx, l):
     cdr = l.val[1:]
     return ctx.env.new(LispList(cdr))
 
+@built_in(default_globals, 'list', count_args=False)
+def lisp_list(self, ctx, l):
+    if len(l) > 1024:
+        raise LispError('too many items in list')
+    return ctx.env.new(LispList(l))
+
