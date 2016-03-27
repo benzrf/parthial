@@ -34,7 +34,7 @@ def lisp_apply(self, ctx, f, xs):
     if not callable(f):
         raise UncallableError(f)
     check_type(self, xs, LispList, 2)
-    return f(xs.val, ctx)
+    return f(ctx, xs.val)
 
 @built_in(default_globals, 'progn', count_args=False)
 def lisp_progn(self, ctx, args):
