@@ -43,7 +43,7 @@ Serialization
 PyYAML serializers and deserializers are provided for all Lisp value types, as
 well as for definition environments (built-ins are serialized by name, so a
 global scope must be supplied at deserialization). Allocation limitations are
-kept track of across serializtion, so it's safe and easy to give users a
+kept track of across serialization, so it's safe and easy to give users a
 persistent mutable environment.
 
 Shortcomings
